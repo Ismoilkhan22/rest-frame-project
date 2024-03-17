@@ -1,11 +1,10 @@
-from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import generics
+from rest_framework import generics, permissions
+from django_filters.rest_framework import DjangoFilterBackend
 from movies.models import Movie, Actor
 from movies.serializer import MovieDetailSerializer, ReviewCreateSerializer, CreateRatingSerializer, \
     MovieListSerializer, ActorListSerializer, ActorDetailSerializer
 from django.db import models
-from .service import get_client_ip
+from .service import get_client_ip, MovieFilter
 
 
 # class MovieListView(APIView):
@@ -27,12 +26,15 @@ class MovieListView(generics.ListAPIView):
     movi api list
     """
     serializer_class = MovieListSerializer
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = MovieFilter
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         movies = Movie.objects.filter(draft=False).annotate(
-            rating_user=models.Count("ratings", filter=models.Q(ratings_ip=get_client_ip(self.request)))
+            rating_user=models.Count("rating", filter=models.Q(rating__ip=get_client_ip(self.request)))
         ).annotate(
-            middle_star=models.Sum(models.F('ratings__star')) / models.Count(models.F('ratings'))
+            middle_star=models.Sum(models.F('rating__star')) / models.Count(models.F('rating'))
         )
         return movies
 
