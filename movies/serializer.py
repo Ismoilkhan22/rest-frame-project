@@ -23,14 +23,16 @@ class RecursiveSerializer(serializers.Serializer):
         return serializer.data
 
 
-class MovieSerializer(serializers.ModelSerializer):
+class MovieListSerializer(serializers.ModelSerializer):
     """
     commit write
     """
+    rating_user = serializers.BooleanField()
+    middle_star = serializers.BooleanField()
 
     class Meta:
         model = Movie
-        fields = ("title", "tagline")
+        fields = ("id", "title", "tagline", "category", "rating_user", "middle_star")
 
 
 class ReviewCreateSerializer(serializers.ModelSerializer):
@@ -86,4 +88,3 @@ class CreateRatingSerializer(serializers.ModelSerializer):
             defaults={'star': validated_data.get("star")}
         )
         return rating
-
